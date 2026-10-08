@@ -15,20 +15,39 @@
     }
   });
 
-  // Project filter
+  // Project filter + show more
   var filterBtns = d.querySelectorAll('.filters button');
   var cards = d.querySelectorAll('.proj');
+  var more = d.getElementById('more-projects');
+  var LIMIT = 3, expanded = false, current = 'all';
+
+  function render() {
+    var shown = 0, total = 0;
+    cards.forEach(function (c) {
+      var match = current === 'all' || c.getAttribute('data-cat').split(' ').indexOf(current) > -1;
+      if (match) total++;
+      var visible = match && (expanded || shown < LIMIT);
+      if (visible) shown++;
+      c.hidden = !visible;
+    });
+    if (more) {
+      more.parentNode.hidden = total <= LIMIT;
+      more.textContent = expanded ? 'Show fewer' : 'Show all projects (' + total + ')';
+      more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+  }
+
   filterBtns.forEach(function (b) {
     b.addEventListener('click', function () {
       filterBtns.forEach(function (x) {
         x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
       });
-      var f = b.getAttribute('data-filter');
-      cards.forEach(function (c) {
-        c.hidden = !(f === 'all' || c.getAttribute('data-cat').split(' ').indexOf(f) > -1);
-      });
+      current = b.getAttribute('data-filter');
+      render();
     });
   });
+  if (more) more.addEventListener('click', function () { expanded = !expanded; render(); });
+  render();
 
   // Scroll reveal + active nav link
   var reveals = d.querySelectorAll('.reveal');
